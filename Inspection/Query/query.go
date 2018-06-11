@@ -6,18 +6,18 @@ import rest "github.com/CincyGolangMeetup/HealthInspection/Inspection/Rest"
 
 type Query struct {
 	businessName string
-	address string
-	city string
-	state string
+	address      string
+	city         string
+	state        string
 }
 
 type QueryResult struct {
-	inspectionType string
+	inspectionType       string
 	violationDescription string
 }
 
 var (
-	_ query.Query = &Query{}
+	_ query.Query       = &Query{}
 	_ query.QueryResult = &QueryResult{}
 )
 
@@ -50,28 +50,31 @@ func (q *Query) QueryWithState(state string) query.Query {
 
 func (q *Query) Print() {
 	fmt.Println("Query:")
-	if (q.businessName != "") {
+	if q.businessName != "" {
 		fmt.Printf("BusinessName: %v\n", q.businessName)
 	}
-	if (q.address != "") {
+	if q.address != "" {
 		fmt.Printf("Address: %v\n", q.address)
 	}
-	if (q.city != "") {
+	if q.city != "" {
 		fmt.Printf("City: %v\n", q.city)
 	}
-	if (q.state != "") {
+	if q.state != "" {
 		fmt.Printf("State: %v\n", q.state)
 	}
 }
 
+/*
+*
+ */
 func (q *Query) Execute() (*query.Results, error) {
-	_, err := rest.NewRestRepository(
+	repo, err := rest.NewRestRepository(
 		rest.WithName("testing"),
 		rest.WithQuery(q),
-		rest.WithLimit(1),
+		rest.WithLimit(3),
 	)
 
-	if (err != nil) {
+	if err != nil {
 		fmt.Println("Error: %v\n", err)
 		return nil, err
 	}
@@ -83,20 +86,25 @@ func (q *Query) Execute() (*query.Results, error) {
 	 * so that they can be returned to the executor.
 	 */
 
-	return &query.Results{
-		/*
-		 * Sample data.
-		 */
-		&QueryResult{inspectionType: "type", violationDescription: "description"}},
-		nil;
+	restInspections, err := repo.GetAll()
+
+	var results query.Results
+
+	for i := 0; i < len(restInspections); i++ {
+		var qr = &QueryResult{inspectionType: restInspections[i].InspType, violationDescription: restInspections[i].ViolationDescription}
+		results = append(results, qr)
+	}
+
+	return &results,
+		nil
 }
 
 func (qr *QueryResult) Print() {
-	fmt.Println("Query Result:");
-	if (qr.inspectionType != "") {
+	fmt.Println("Query Result:")
+	if qr.inspectionType != "" {
 		fmt.Printf("Inspection Type: %v\n", qr.inspectionType)
 	}
-	if (qr.violationDescription != "") {
+	if qr.violationDescription != "" {
 		fmt.Printf("Violation Description: %v\n", qr.violationDescription)
 	}
 }
