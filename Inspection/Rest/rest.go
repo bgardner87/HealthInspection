@@ -3,8 +3,8 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	query "github.com/CincyGolangMeetup/HealthInspection/Query"
 )
 
@@ -67,6 +68,7 @@ type RestInspectionRepository interface {
 	// GetAll returns a list of all health inspections.
 	GetAll() (RestInspections, error)
 }
+
 // Package cincyfsp provides an interace to data provided by the Cincinnati
 // Food Safety Program.
 
@@ -127,10 +129,18 @@ func (s *RestInspectionRepositoryImpl) GetAll() (RestInspections, error) {
 	 */
 	s.query.Print()
 
+	var businessName = s.query.GetBusinessName()
+	if len(businessName) > 0 {
+		fmt.Println("adding business name")
+		q.Add("business_name", "\""+businessName+"\"")
+	}
+
 	if s.limit > 0 {
 		q.Add("$limit", strconv.Itoa(s.limit))
 	}
 	req.URL.RawQuery = q.Encode()
+
+	fmt.Println(req.URL.RawQuery)
 
 	res, err := s.client.Do(req)
 	if err != nil {
@@ -209,6 +219,7 @@ func WithQuery(q query.Query) RestInspectionRepositoryOption {
 		return nil
 	}
 }
+
 // WithExampleData replaces the HTTP client with a mock transport that returns
 // example data.
 func WithExampleData() RestInspectionRepositoryOption {

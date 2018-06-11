@@ -33,6 +33,10 @@ func (q *Query) QueryWithBusinessName(name string) query.Query {
 	return q
 }
 
+func (q *Query) GetBusinessName() string {
+	return q.businessName
+}
+
 func (q *Query) QueryWithAddress(address string) query.Query {
 	q.address = address
 	return q
